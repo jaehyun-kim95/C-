@@ -1,0 +1,43 @@
+{"results":
+[{"id":1835848,
+"name":"서울특별시",
+"latitude":37.566,
+"longitude":126.9784,
+"elevation":38.0,
+"feature_code":"PPLC",
+"country_code":"KR",
+"admin1_id":1835847,
+"timezone":"Asia/Seoul",
+"population":10349312,
+"country_id":1835841,
+"country":"대한민국",
+"admin1":"서울특별시"}],
+"generationtime_ms":0.14102459}
+
+
+{"latitude":37.55,
+"longitude":127.0,
+"generationtime_ms":0.06282329559326172,
+"utc_offset_seconds":32400,
+"timezone":"Asia/Seoul",
+"timezone_abbreviation":"GMT+9",
+"elevation":37.0,
+"current_units":
+	{"time":"iso8601",
+ 	 "interval":"seconds",
+ 	 "temperature_2m":"°C",
+ 	 "wind_speed_10m":"km/h"},
+"current":
+	{"time":"2026-10-26T20:15",
+ 	 "interval":900,
+ 	 "temperature_2m":15.1,
+ 	 "wind_speed_10m":3.5},
+ 	 "daily_units":
+		{"time":"iso8601",
+		 "temperature_2m_max":"°C",
+		 "temperature_2m_min":"°C"},
+ 	 "daily":
+		{"time":["2026-10-26","2026-10-27","2026-10-28"],
+	             "temperature_2m_max":[18.8,15.7,10.9],
+	             "temperature_2m_min":[13.2,5.0,1.7]}
+	}

@@ -1,0 +1,166 @@
+using System.Diagnostics;
+using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+
+var http = new HttpClient();
+var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+// ====== 1. 도시 http 호출 ===== 
+//HttpClient httpClient1 = new HttpClient();
+//JsonSerializerOptions jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
+
+//string httpResult = await httpClient1.GetStringAsync("https://geocoding-api.open-meteo.com/v1/search?name=Seoul&count=1&language=ko");
+
+//// ===== 2. 응답 json 파싱 =====
+//var node = JsonNode.Parse(httpResult)!;
+
+//Geo? geoResponse = node["results"]?[0].Deserialize<Geo>(jsonSerializerOptions);
+//Console.WriteLine($"{geoResponse.Name} ({geoResponse.country}) 위도 {Math.Round(geoResponse.latitude, 2)} / 경도 {Math.Round(geoResponse.longitude, 2)}");
+
+//// ===== 3. 날씨 http 호출 =====
+//string httpResult2 = await httpClient1.GetStringAsync("https://api.open-meteo.com/v1/forecast?latitude=37.57&longitude=126.98&current=temperature_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul&forecast_days=3");
+//var node2 = JsonNode.Parse(httpResult2)!;
+//CurrentTemp? currentTemp = node2["current"]?.Deserialize<CurrentTemp>(jsonSerializerOptions);
+//Daily? daily = node2["daily"]?.Deserialize<Daily>(jsonSerializerOptions);
+
+//Console.WriteLine($"[{geoResponse.Name}] 현재 {currentTemp.Temperature}, 풍속 {currentTemp.WindSpeed}");
+//for(int i = 0; i < daily?.time.Count; i++)
+//{
+//    Console.WriteLine($"{daily.time[i].ToString("MM/dd")} 최고 {daily.MaxTemperature[i]} / 최저 {daily.MinTemperature[i]}");
+//}
+
+// ===== 4,5. 도시 이름 하나로 끝까지 호출 =====
+//Task<string> task1 = GetWeatherByCityAsync("Seoul");
+//Task<string> task2 = GetWeatherByCityAsync("Busan");
+//Task<string> task3 = GetWeatherByCityAsync("Jeju");
+//Task<string> task4 = GetWeatherByCityAsync("Tokyo");
+//Task<string> task5 = GetWeatherByCityAsync("dfaes");
+
+//string[] res = await Task.WhenAll(task1,task2,task3,task4,task5);
+//foreach (var lines in res) {
+//    Console.WriteLine(lines);
+//}
+
+// ===== 6. 네트워크 오류 처리
+try {
+    using var cts = new CancellationTokenSource();
+    cts.CancelAfter(1);
+
+    await Step6HttpCall1(cts.Token);
+}
+catch (HttpRequestException ex){ 
+    Console.WriteLine(ex.Message);
+}
+catch (OperationCanceledException ex)
+{
+    Console.WriteLine(ex.Message);
+}
+
+
+async Task<string> GetWeatherByCityAsync(string city)
+{
+        
+    try
+    {
+        //도시정보.
+        string httpResult = await http.GetStringAsync($"https://geocoding-api.open-meteo.com/v1/search" +
+                                                             $"?name={Uri.EscapeDataString(city)}&count=1&language=ko");
+        var node = JsonNode.Parse(httpResult)!;
+        Geo? geoResponse = node["results"]?[0].Deserialize<Geo>(jsonOptions); // 도시정보 
+
+        if (geoResponse is null) { return "찾지 못함"; }        
+
+        string httpResult2 = await http.GetStringAsync($"https://api.open-meteo.com/v1/forecast?latitude={Math.Round(geoResponse.latitude, 2)}" +
+                                                              $"&longitude={Math.Round(geoResponse.longitude, 2)}&current=temperature_2m,wind_speed_10m" +
+                                                              $"&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul&forecast_days=3");
+        var node2 = JsonNode.Parse(httpResult2)!;
+        CurrentTemp? currentTemp = node2["current"]?.Deserialize<CurrentTemp>(jsonOptions);
+        Daily? daily = node2["daily"]?.Deserialize<Daily>(jsonOptions);
+        return $"{geoResponse.Name}    {currentTemp.Temperature}    {currentTemp.WindSpeed}    {daily.MinTemperature[1]} / {daily.MaxTemperature[1]}";
+    }
+    catch (HttpRequestException ex)
+    {
+        return ex.Message;
+    }
+}
+
+
+async Task Step1HttpCall()
+{
+    HttpClient httpClient1 = new HttpClient();
+    string httpResult = await httpClient1.GetStringAsync("https://geocoding-api.open-meteo.com/v1/search?name=Seoul&count=1&language=ko");
+    Console.WriteLine(httpResult);
+}
+
+async Task Step2HttpCallParse()
+{
+    HttpClient httpClient1 = new HttpClient();
+    JsonSerializerOptions jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
+
+    string httpResult = await httpClient1.GetStringAsync("https://geocoding-api.open-meteo.com/v1/search?name=Seoul&count=1&language=ko");
+    var node = JsonNode.Parse(httpResult)!;
+    
+    Geo? geoResponse = node["results"]?[0].Deserialize<Geo>(jsonSerializerOptions);
+    Console.WriteLine($"{geoResponse.Name} ({geoResponse.country}) 위도 {Math.Round(geoResponse.latitude,2)} / 경도 {Math.Round(geoResponse.longitude,2)}");
+}
+
+async Task Step6HttpCall1(CancellationToken cts)
+{
+    //using var httpClient1 = new HttpClient();
+    //JsonSerializerOptions jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
+    
+    try
+    {
+        //도시정보.
+        string httpResult = await http.GetStringAsync($"https://geocoding-api.open-meteo.comx/v1/search" +
+                                                         $"?name=Seoul&count=1&language=ko",cts);
+        var node = JsonNode.Parse(httpResult)!;
+        Geo? geoResponse = node["results"]?[0].Deserialize<Geo>(jsonOptions); // 도시정보 
+
+        if (geoResponse is null) Console.WriteLine("찾지 못함");
+
+        //날씨정보.
+
+        string httpResult2 = await http.GetStringAsync($"https://api.open-meteo.com/v1/forecast?latitude={Math.Round(geoResponse.latitude, 2)}" +
+                                                              $"&longitude={Math.Round(geoResponse.longitude, 2)}&current=temperature_2m,wind_speed_10m" +
+                                                              $"&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul&forecast_days=3", cts);
+        var node2 = JsonNode.Parse(httpResult2)!;
+        CurrentTemp? currentTemp = node2["current"]?.Deserialize<CurrentTemp>(jsonOptions);
+        Daily? daily = node2["daily"]?.Deserialize<Daily>(jsonOptions);
+        Console.WriteLine($"{geoResponse.Name}    {currentTemp.Temperature}    {currentTemp.WindSpeed}    {daily.MinTemperature[1]} / {daily.MaxTemperature[1]}");
+    }
+    catch (HttpRequestException ex) when (ex.StatusCode is null) 
+    {
+        throw new HttpRequestException("연결 오류");
+    }
+    catch(HttpRequestException ex)
+    {
+        if ((int?)ex.StatusCode == 400)
+        {
+            throw new HttpRequestException("요청 요류");            
+        }
+        else
+        {
+            throw new HttpRequestException($"{ex.Message}");            
+        }
+    }
+    catch(TaskCanceledException ex)
+    {
+        throw new HttpRequestException($"{ex.Message}");
+    }
+}
+
+
+
+record Geo(string Name, double latitude, double longitude, string country);
+
+record CurrentTemp(DateTime time, 
+                   [property: JsonPropertyName("temperature_2m")] double Temperature,
+                   [property: JsonPropertyName("wind_speed_10m")] double WindSpeed);
+
+record Daily(List<DateTime> time,
+             [property: JsonPropertyName("temperature_2m_max")] List<double> MaxTemperature,
+             [property: JsonPropertyName("temperature_2m_min")] List<double> MinTemperature); 
