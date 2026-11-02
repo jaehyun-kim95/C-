@@ -18,7 +18,7 @@ namespace WinFormsApp1
             cboMenu.Items.Add(new MenuItem("녹차라떼", 4800));
             cboMenu.DisplayMember = "Name";
             lstCart.DisplayMember = "Name";
-            
+
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -144,8 +144,13 @@ namespace WinFormsApp1
             }
         }
 
-        
+
         record MenuItem(string Name, decimal Price);
         record CartItem(string Name, decimal TotalPrice);
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
