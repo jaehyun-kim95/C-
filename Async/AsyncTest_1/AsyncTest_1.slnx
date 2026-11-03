@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="AsyncTest_1/AsyncTest_1.csproj" />
+  <Project Path="AsyncTest_2/AsyncTest_2.csproj" />
+</Solution>
