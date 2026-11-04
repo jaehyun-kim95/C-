@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Reflection;
 
 namespace WinFormsApp1
 {
@@ -59,6 +60,79 @@ namespace WinFormsApp1
         private void btnCancel_Click(object sender, EventArgs e)
         {
             bindingSource1.CancelEdit();
+        }
+
+        private void dataGridView1_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+        {
+            string colName = dataGridView1.Columns[e.ColumnIndex].DataPropertyName;
+            dataGridView1.Rows[e.RowIndex].ErrorText = "";
+
+            if (colName == "_price" || colName == "_stock")
+            {
+                if (!decimal.TryParse(e.FormattedValue.ToString(), out decimal a) || a < 0)
+                {
+                    e.Cancel = true;
+                    dataGridView1.Rows[e.RowIndex].ErrorText = "가격 또는 재고는 0 이상의 숫자여야 합니다.";
+                }
+            }
+
+        }
+
+        private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+            if (dataGridView1.Rows[e.RowIndex].DataBoundItem is Product p)
+            {
+                if (p._stock <= 5)
+                {
+                    dataGridView1.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.MistyRose;
+                }
+                else
+                {
+                    dataGridView1.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.White;
+                }
+            }
+        }
+
+        private void bindingSource1_ListChanged(object sender, ListChangedEventArgs e)
+        {
+            int totalCount = bindingSource1.Count;
+            toolStripStatusLabel1.Text = $"총 {totalCount}종";
+
+            int totalStock = 0;
+            if (bindingSource1.DataSource is BindingList<Product> p)
+            {
+                foreach (var pd in p)
+                {
+                    totalStock = totalStock + pd._stock;
+                }
+                toolStripStatusLabel2.Text = $"재고 합계 {totalStock}개";
+            }
+
+        }
+
+        private void dataGridView1_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            string colName = dataGridView1.Columns[e.ColumnIndex].DataPropertyName;
+            var prop = typeof(Product).GetProperty(colName);
+            var sorted = products.OrderBy(o => prop.GetValue(o)).ToList();
+            products = new BindingList<Product>(sorted);
+            bindingSource1.DataSource = products;
+        }
+
+        private void txtFindName_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.KeyCode == Keys.Enter)
+            {
+                if (txtFindName.Text.Trim() != "")
+                {
+                    var filt = products.Where(w => w._name == txtFindName.Text).ToList();
+                    bindingSource1.DataSource = new BindingList<Product>(filt);
+                } else
+                {
+                    bindingSource1.DataSource = products;
+                }
+            }
         }
     }
 }

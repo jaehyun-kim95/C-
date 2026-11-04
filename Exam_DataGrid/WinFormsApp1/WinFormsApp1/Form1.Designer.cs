@@ -47,10 +47,15 @@
             btnRemove = new Button();
             btnSave = new Button();
             btnCancel = new Button();
+            statusStrip1 = new StatusStrip();
+            toolStripStatusLabel1 = new ToolStripStatusLabel();
+            toolStripStatusLabel2 = new ToolStripStatusLabel();
+            txtFindName = new TextBox();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)bindingSource1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numPrice).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numStock).BeginInit();
+            statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // dataGridView1
@@ -65,6 +70,9 @@
             dataGridView1.Name = "dataGridView1";
             dataGridView1.Size = new Size(546, 223);
             dataGridView1.TabIndex = 0;
+            dataGridView1.CellFormatting += dataGridView1_CellFormatting;
+            dataGridView1.CellValidating += dataGridView1_CellValidating;
+            dataGridView1.ColumnHeaderMouseClick += dataGridView1_ColumnHeaderMouseClick;
             // 
             // Column1
             // 
@@ -99,9 +107,13 @@
             Column5.HeaderText = "재고";
             Column5.Name = "Column5";
             // 
+            // bindingSource1
+            // 
+            bindingSource1.ListChanged += bindingSource1_ListChanged;
+            // 
             // button1
             // 
-            button1.Location = new Point(603, 122);
+            button1.Location = new Point(582, 237);
             button1.Name = "button1";
             button1.Size = new Size(75, 23);
             button1.TabIndex = 1;
@@ -198,11 +210,42 @@
             btnCancel.UseVisualStyleBackColor = true;
             btnCancel.Click += btnCancel_Click;
             // 
+            // statusStrip1
+            // 
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripStatusLabel2 });
+            statusStrip1.Location = new Point(0, 428);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new Size(800, 22);
+            statusStrip1.TabIndex = 12;
+            statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            toolStripStatusLabel1.Size = new Size(42, 17);
+            toolStripStatusLabel1.Text = "총 5종";
+            // 
+            // toolStripStatusLabel2
+            // 
+            toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            toolStripStatusLabel2.Size = new Size(86, 17);
+            toolStripStatusLabel2.Text = "재고 합계 m개";
+            // 
+            // txtFindName
+            // 
+            txtFindName.Location = new Point(557, 52);
+            txtFindName.Name = "txtFindName";
+            txtFindName.Size = new Size(100, 23);
+            txtFindName.TabIndex = 13;
+            txtFindName.KeyDown += txtFindName_KeyDown;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(txtFindName);
+            Controls.Add(statusStrip1);
             Controls.Add(btnCancel);
             Controls.Add(btnSave);
             Controls.Add(btnRemove);
@@ -222,6 +265,8 @@
             ((System.ComponentModel.ISupportInitialize)bindingSource1).EndInit();
             ((System.ComponentModel.ISupportInitialize)numPrice).EndInit();
             ((System.ComponentModel.ISupportInitialize)numStock).EndInit();
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -246,5 +291,9 @@
         private Button btnRemove;
         private Button btnSave;
         private Button btnCancel;
+        private StatusStrip statusStrip1;
+        private ToolStripStatusLabel toolStripStatusLabel1;
+        private ToolStripStatusLabel toolStripStatusLabel2;
+        private TextBox txtFindName;
     }
 }
