@@ -37,16 +37,20 @@ namespace WinFormsApp1
 
         public async Task SaveAsync(IReadOnlyList<Ticket> tickets, CancellationToken ct)
         {
-            if (RandomLatency)
-            {
-                await Task.Delay(Random.Shared.Next(1000, 4001), ct);
-            }
-            else
-            {
-                await Task.Delay(Latency, ct);
-            }
+            await Task.Delay(Random.Shared.Next(1000, 4001), ct);
 
+            ct.ThrowIfCancellationRequested();
 
+            foreach (Ticket ticket in tickets) {
+                var mst = _ticketList.FirstOrDefault(s => s.Id == ticket.Id);
+                if (mst is null) { continue; }
+
+                mst.Title = ticket.Title;
+                mst.Assignee = ticket.Assignee;
+                mst.Status = ticket.Status;
+                mst.UpdatedAt = ticket.UpdatedAt;
+            }
         }
+
     }
 }
