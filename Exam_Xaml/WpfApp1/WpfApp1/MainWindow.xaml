@@ -5,7 +5,7 @@
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
         x:Class="WpfApp1.MainWindow" 
-        Width="820" Title="직원 정보 관리" Height="536">
+        Width="820" Title="직원 정보 관리" Height="540" WindowStartupLocation="CenterScreen" MinWidth="600" MinHeight="540">
     <Window.Resources>
         <Style x:Key="MenuButton" TargetType="Button">
             <Setter Property="Padding" Value="8"></Setter>
@@ -21,16 +21,42 @@
 
         <Style x:Key="FormLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="15"></Setter>
+            <Setter Property="Padding" Value="0,10,0,10"></Setter>
         </Style>
-        
+
+        <Style x:Key="FormTextBox" TargetType="TextBox">
+            <Setter Property="FontSize" Value="15"></Setter>
+            <Setter Property="Padding" Value="3,5,0,5"></Setter>
+            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="HorizontalAlignment" Value="Left"></Setter>
+        </Style>
+
+        <Style x:Key="FormCombo" TargetType="ComboBox">
+            <Setter Property="FontSize" Value="15"></Setter>
+            <Setter Property="Padding" Value="3,5,0,5"></Setter>
+            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="HorizontalAlignment" Value="Left"></Setter>
+        </Style>
+
+        <Style x:Key="FormDate" TargetType="DatePicker">
+            <Setter Property="FontSize" Value="15"></Setter>
+            <Setter Property="Padding" Value="3,5,0,5"></Setter>
+
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="HorizontalAlignment" Value="Left"></Setter>
+        </Style>
+
     </Window.Resources>
-    <Grid RenderTransformOrigin="0.5,0.5">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+
         <Border Background="SteelBlue" Grid.Row="0">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -38,24 +64,27 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock VerticalAlignment="Center" Text="직원 정보 등록" Margin="12,0" FontSize="18" Foreground="White" Grid.Column="0"/>
-                <TextBlock VerticalAlignment="Center" Text="홍길동 님 · 인사팀" Opacity="0.6" Margin="12,0" FontSize="10" Foreground="White" Grid.Column="1"/>
+                <TextBlock VerticalAlignment="Center" Text="홍길동 님 · 인사팀" Opacity="0.6" Margin="12,0" FontSize="12" Foreground="White" Grid.Column="1"/>
             </Grid>
         </Border>
-        
+
+
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="180"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" BorderThickness="0,0,1,0" BorderBrush="LightGray" Background="#F3F5F8">
-                <StackPanel Margin="10">
-                    <Button Content="직원 목록" Style="{StaticResource MenuButton}"/>
-                    <Button Content="직원 등록" Style="{StaticResource SelectedButton}"/>
-                    <Button Content="부서 관리" Style="{StaticResource MenuButton}"/>
-                    <Button Content="설정" Margin="0" Style="{StaticResource MenuButton}"/>
-                </StackPanel>
+            <Border BorderThickness="0,0,1,0" BorderBrush="LightGray" Background="#F3F5F8">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10">
+                        <Button Content="직원 목록" Style="{StaticResource MenuButton}"/>
+                        <Button Content="직원 등록" Style="{StaticResource SelectedButton}"/>
+                        <Button Content="부서 관리" Style="{StaticResource MenuButton}"/>
+                        <Button Content="설정" Margin="0" Style="{StaticResource MenuButton}"/>
+                    </StackPanel>
+                </ScrollViewer>
             </Border>
-            
+
             <Grid Grid.Column="1" Margin="20">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"></RowDefinition>
@@ -75,14 +104,34 @@
                         <RowDefinition Height="Auto"></RowDefinition>
                         <RowDefinition Height="*"></RowDefinition>
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Column="0" Grid.Row="0" Text="사번" Style="{StaticResource FormLabel}"></TextBlock>
-                    <TextBox Grid.Column="1" Grid.Row="0" Width="220" HorizontalAlignment="Left"></TextBox>
+                    <TextBlock Grid.Column="0" Grid.Row="0" Text="사번" Style="{StaticResource FormLabel}"/>
+                    <TextBox Grid.Column="1" Grid.Row="0" Width="220" Text="E-2026-0042" Style="{StaticResource FormTextBox}"></TextBox>
+
+                    <TextBlock Grid.Column="0" Grid.Row="1" Text="이름" Style="{StaticResource FormLabel}"></TextBlock>
+                    <TextBox Grid.Column="1" Grid.Row="1" Width="220" Text="김민수" Style="{StaticResource FormTextBox}"></TextBox>
+
+                    <TextBlock Grid.Column="0" Grid.Row="2" Text="부서" Style="{StaticResource FormLabel}"></TextBlock>
+                    <ComboBox Grid.Column="1" Grid.Row="2" Width="220" SelectedIndex="0" Style="{StaticResource FormCombo}">
+                        <ComboBoxItem Content="개발1팀"></ComboBoxItem>
+                        <ComboBoxItem Content="개발2팀"></ComboBoxItem>
+                        <ComboBoxItem Content="인사팀"></ComboBoxItem>
+                    </ComboBox>
+
+                    <TextBlock Grid.Column="0" Grid.Row="3" Text="입사일" Style="{StaticResource FormLabel}"></TextBlock>
+                    <DatePicker Grid.Column="1" Grid.Row="3" Style="{StaticResource FormDate}" Text="2026-03-02" Width="220"></DatePicker>
+
+                    <TextBlock Grid.Column="0" Grid.Row="4" Text="이메일" Style="{StaticResource FormLabel}"></TextBlock>
+                    <TextBox Grid.Column="1" Grid.Row="4" Width="Auto" Text="minsu.kim@example.com" Style="{StaticResource FormTextBox}" HorizontalAlignment="Stretch"></TextBox>
+
+                    <TextBlock Grid.Column="0" Grid.Row="5" Text="메모" Style="{StaticResource FormLabel}"></TextBlock>
+                    <TextBox Grid.Column="1" Grid.Row="5" Text="신입 공채 입사. 온보딩 교육 이수 완료." Padding="3,5,0,0" FontSize="13" 
+                             AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto"></TextBox>
                 </Grid>
             </Grid>
         </Grid>
         
         <Border Grid.Row="2" BorderThickness="0,1,0,1" BorderBrush="Gray">
-            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="8" HorizontalAlignment="Right">
+            <StackPanel Orientation="Horizontal" Margin="8" HorizontalAlignment="Right">
                 <Button Width="90" Padding="1,5,1,5" Margin="0,0,8,0" FontSize="13" Content="저장"/>
                 <Button Width="90" Padding="1,5,1,5" FontSize="13" Content="취소"/>
             </StackPanel>
