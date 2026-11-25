@@ -13,7 +13,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
             <Setter Property="Background" Value="White"></Setter>
         </Style>
-        
+
         <Style x:Key="SelectedButton" TargetType="Button" BasedOn="{StaticResource MenuButton}">
             <Setter Property="Background" Value="#DBE8F6"/>
             <Setter Property="FontWeight" Value="Bold"></Setter>
@@ -105,40 +105,38 @@
                         <RowDefinition Height="*"></RowDefinition>
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Column="0" Grid.Row="0" Text="사번" Style="{StaticResource FormLabel}"/>
-                    <TextBox Grid.Column="1" Grid.Row="0" Width="220" Text="E-2026-0042" Style="{StaticResource FormTextBox}"></TextBox>
+                    <TextBox Grid.Column="1" Grid.Row="0" Width="220" Text="{Binding EmployeeNo}" Style="{StaticResource FormTextBox}"></TextBox>
 
                     <TextBlock Grid.Column="0" Grid.Row="1" Text="이름" Style="{StaticResource FormLabel}"></TextBlock>
-                    <TextBox Grid.Column="1" Grid.Row="1" Width="220" Text="김민수" Style="{StaticResource FormTextBox}"></TextBox>
+                    <TextBox Grid.Column="1" Grid.Row="1" Width="220" Text="{Binding Name, UpdateSourceTrigger =PropertyChanged}" Style="{StaticResource FormTextBox}"></TextBox>
 
                     <TextBlock Grid.Column="0" Grid.Row="2" Text="부서" Style="{StaticResource FormLabel}"></TextBlock>
-                    <ComboBox Grid.Column="1" Grid.Row="2" Width="220" SelectedIndex="0" Style="{StaticResource FormCombo}">
-                        <ComboBoxItem Content="개발1팀"></ComboBoxItem>
-                        <ComboBoxItem Content="개발2팀"></ComboBoxItem>
-                        <ComboBoxItem Content="인사팀"></ComboBoxItem>
+                    <ComboBox Grid.Column="1" Grid.Row="2" Width="220" Style="{StaticResource FormCombo}" ItemsSource="{Binding Departments}" SelectedItem="{Binding Department}">
                     </ComboBox>
 
                     <TextBlock Grid.Column="0" Grid.Row="3" Text="입사일" Style="{StaticResource FormLabel}"></TextBlock>
-                    <DatePicker Grid.Column="1" Grid.Row="3" Style="{StaticResource FormDate}" Text="2026-03-02" Width="220"></DatePicker>
+                    <DatePicker Grid.Column="1" Grid.Row="3" Style="{StaticResource FormDate}" Width="220" SelectedDate="{Binding HireDate}"></DatePicker>
 
                     <TextBlock Grid.Column="0" Grid.Row="4" Text="이메일" Style="{StaticResource FormLabel}"></TextBlock>
-                    <TextBox Grid.Column="1" Grid.Row="4" Width="Auto" Text="minsu.kim@example.com" Style="{StaticResource FormTextBox}" HorizontalAlignment="Stretch"></TextBox>
+                    <TextBox Grid.Column="1" Grid.Row="4" Width="Auto" Text="{Binding Email}" Style="{StaticResource FormTextBox}" HorizontalAlignment="Stretch"></TextBox>
 
                     <TextBlock Grid.Column="0" Grid.Row="5" Text="메모" Style="{StaticResource FormLabel}"></TextBlock>
-                    <TextBox Grid.Column="1" Grid.Row="5" Text="신입 공채 입사. 온보딩 교육 이수 완료." Padding="3,5,0,0" FontSize="13" 
+                    <TextBox Grid.Column="1" Grid.Row="5" Padding="3,5,0,0" FontSize="13" Text="{Binding Memo}" 
                              AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto"></TextBox>
                 </Grid>
             </Grid>
         </Grid>
-        
+
         <Border Grid.Row="2" BorderThickness="0,1,0,1" BorderBrush="Gray">
             <StackPanel Orientation="Horizontal" Margin="8" HorizontalAlignment="Right">
-                <Button Width="90" Padding="1,5,1,5" Margin="0,0,8,0" FontSize="13" Content="저장"/>
+                <Button x:Name="BtnLoad" Width="90" Padding="1,5,1,5" Margin="0,0,8,0" FontSize="13" Content="불러오기" Click="BtnLoad_Click"/>
+                <Button x:Name="BtnSave" Width="90" Padding="1,5,1,5" Margin="0,0,8,0" FontSize="13" Content="저장" Click="BtnSave_Click" IsEnabled="{Binding CanSave}"/>
                 <Button Width="90" Padding="1,5,1,5" FontSize="13" Content="취소"/>
             </StackPanel>
         </Border>
         <StatusBar Grid.Row="3">
             <StatusBarItem Content="준비"/>
-            <StatusBarItem Content="입력 항목 6개" HorizontalAlignment="Right" FontSize="12" Opacity="0.6" Margin="0,0,5,0"/>
+            <StatusBarItem Content="{Binding Summary}" HorizontalAlignment="Right" FontSize="12" Opacity="0.6" Margin="0,0,5,0"/>
         </StatusBar>
     </Grid>
 </Window>
