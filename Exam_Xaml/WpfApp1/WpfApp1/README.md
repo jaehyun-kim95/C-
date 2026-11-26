@@ -1,12 +1,48 @@
-# WPF 학습 노트: XAML 레이아웃과 데이터 바인딩
+# WPF 학습 노트
 
-실습 화면: 직원 정보 등록 (헤더 / 왼쪽 메뉴 / 입력 폼 / 버튼바 / 상태바)
+Delphi 개발자가 WPF와 MVVM을 익히며 정리한 노트. 실습 화면은 세 차시 모두 **직원 정보 등록** 화면 하나를 이어서 발전시켰다.
+
+## 목차
+
+| 차시 | 주제 | 한 줄 요약 |
+|---|---|---|
+| [1차시](#1차시-xaml-레이아웃) | XAML 레이아웃 | Grid, StackPanel, Style로 크기 조절에 무너지지 않는 화면 만들기 |
+| [2차시](#2차시-데이터-바인딩과-inotifypropertychanged) | 데이터 바인딩과 INotifyPropertyChanged | 컨트롤을 직접 만지지 않고 ViewModel 속성으로 화면 움직이기 |
+| [3차시](#3차시-command-icommand--communitytoolkitmvvm) | Command (ICommand → CommunityToolkit.Mvvm) | Click 핸들러 없이 버튼이 ViewModel 메서드를 실행하게 하기 |
+
+각 차시는 **목표 → 실습 단계 → 정리 → 함정과 오류** 순서로 되어 있다.
+
+## 프로젝트 파일
+
+| 파일 | 역할 | 등장 차시 |
+|---|---|---|
+| `MainWindow.xaml` | 화면 (레이아웃, 바인딩, Command 연결) | 1차시부터 |
+| `MainWindow.xaml.cs` | 코드비하인드. 최종적으로 `DataContext = ...` 한 줄만 남음 | 2차시부터 |
+| `EmployeeViewModel.cs` | 화면용 클래스 (속성, 계산 속성, Command 메서드) | 2차시부터 |
+| `docs/` | 이 README의 다이어그램 이미지 | |
 
 ---
 
-## 1. 레이아웃
+# 1차시. XAML 레이아웃
 
-### Grid 크기 단위
+**목표**: 좌표로 끌어다 놓는 대신 패널(Grid, StackPanel)에 배치를 맡겨, 창 크기가 바뀌어도 무너지지 않는 화면을 만든다. 반복 속성은 Style로 한 곳에서 관리한다.
+
+**실습 단계**
+
+| 단계 | 한 일 |
+|---|---|
+| 1 | 창 뼈대: 최상위 Grid 4행 (헤더 `50` / 본문 `*` / 버튼바 `Auto` / 상태바 `Auto`) |
+| 2 | 헤더와 상태바: 왼쪽/오른쪽 끝 정렬 (2열 Grid, StatusBar) |
+| 3 | 왼쪽 메뉴: StackPanel + Style, 선택 메뉴는 `BasedOn`으로 강조 |
+| 4 | 입력 폼: 라벨/입력 2열 Grid, 메모가 남은 높이를 채움 |
+| 5 | 마무리: 창 최소 크기, 메뉴 스크롤, 남은 정리 |
+
+**핵심 세 줄**
+- 크기는 고정값 / `Auto`(내용) / `*`(남은 공간) 세 가지로 정한다.
+- `Grid.Row`/`Grid.Column`은 Grid의 **직계 자식**에만 효과가 있다.
+- 컨트롤에 직접 쓴 값이 Style보다 우선한다.
+
+## 1.1 Grid 크기 단위
 
 | 값 | 의미 | 쓰는 곳 |
 |---|---|---|
@@ -17,7 +53,7 @@
 - `Auto` 행에 빈 `Border`만 있으면 높이가 0이 되어 사라진다. 내용이 있으면 그 높이만큼.
 - 창을 늘리면 `*`인 행/열만 늘어난다.
 
-### Grid vs StackPanel
+## 1.2 Grid vs StackPanel
 
 | | Grid | StackPanel |
 |---|---|---|
@@ -28,7 +64,7 @@
 - WPF `StackPanel`에는 간격 속성이 없다. 자식마다 `Margin`으로 준다.
 - 양쪽 끝 정렬은 2열 Grid(`*` / `Auto`)가 기본. 같은 칸에 겹쳐 놓고 `Left`/`Right`로 정렬하면 창이 좁아질 때 겹친다.
 
-### Delphi 대응
+## 1.3 Delphi 대응
 
 | Delphi | WPF |
 |---|---|
@@ -38,14 +74,14 @@
 | `Anchors := [akLeft, akRight]` | `HorizontalAlignment="Stretch"` (기본값) |
 | `TPanel`에 버튼 나열 | `StackPanel Orientation="Horizontal"` |
 
-### 꼭 기억할 규칙
+## 1.4 꼭 기억할 규칙
 
 - **`Window`와 `Border`는 자식을 하나만** 가진다. 여러 개면 Grid/StackPanel로 감싼다.
 - **`Grid.Row` / `Grid.Column`은 Grid의 직계 자식에만 효과가 있다.** 부모가 Border나 ScrollViewer면 무시된다 (오류 없음).
 - 같은 칸에 자식이 여러 개면 겹쳐 그려진다. `Grid.Row`를 빼먹으면 0행으로 가서 겹친다.
 - 디자이너로 끌어다 놓지 않는다. `Margin`에 좌표가 박혀 크기 조절 시 깨진다.
 
-### 여백과 정렬
+## 1.5 여백과 정렬
 
 | 속성 | 의미 |
 |---|---|
@@ -62,18 +98,18 @@
 | `Left` + `MaxWidth=220` | 내용 너비만큼만 그려짐 (빈 칸이면 아주 좁음) |
 | `Stretch` + `MaxWidth=220` | 220까지 늘고 남는 공간에서 가운데 정렬 |
 
-### ScrollViewer
+## 1.6 ScrollViewer
 
 - 세로 스크롤바 기본값이 **`Visible`(항상 표시)**이다. `VerticalScrollBarVisibility="Auto"`를 준다.
 - 높이가 정해진 곳(`*` 행 안)에 있어야 스크롤된다. StackPanel 안에 넣으면 높이 제한이 없어 스크롤되지 않는다.
 - 배경/구분선이 있는 영역은 `Border > ScrollViewer > StackPanel` 순서로 감싼다. 반대면 스크롤바가 구분선 밖에 생긴다.
 
-### StatusBar
+## 1.7 StatusBar
 
 - 안쪽이 `DockPanel`이라 **마지막 아이템이 남은 공간을 차지**한다. 마지막 아이템에 `HorizontalAlignment="Right"`를 주면 오른쪽 끝에 붙는다.
 - 아이템이 3개 이상이면 가운데 것은 오른쪽으로 보낼 수 없다. 그때는 안에 Grid를 넣는다.
 
-### Style
+## 1.8 Style
 
 ```xml
 <Window.Resources>
@@ -96,7 +132,27 @@
 
 ---
 
-## 2. 데이터 바인딩
+# 2차시. 데이터 바인딩과 INotifyPropertyChanged
+
+**목표**: `Edit.Text := 값`처럼 컨트롤에 직접 넣는 대신, ViewModel 속성을 바꾸면 화면이 따라오게 한다.
+
+**실습 단계**
+
+| 단계 | 한 일 | 관찰한 것 |
+|---|---|---|
+| 1 | ViewModel 생성, `DataContext` 지정, TextBox 4개 바인딩 | 이름 오타 → 빈칸 + 출력 창 오류만. DataContext 없음 → 오류조차 없음 |
+| 2 | 저장 버튼으로 VM 값 확인, `UpdateSourceTrigger`, `Mode=OneWay` | 포커스를 안 받는 버튼이면 마지막 입력값이 빠짐 |
+| 3 | 불러오기로 VM 값만 변경 | 화면이 안 바뀜 → 화면과 VM이 서로 다른 데이터 |
+| 4 | `INotifyPropertyChanged` 직접 구현 → `ObservableObject`로 분리 | 알림 이름이 틀리면 조용히 무시됨 |
+| 5 | 계산 속성 `Summary`, `CanSave` | 계산 속성은 저장하지 않고, 원본 setter가 대신 알림 |
+| 6 | ComboBox, DatePicker 바인딩, `Mode=OneTime` | 목록에 없는 값을 넣으면 화면 ≠ VM |
+
+**핵심 세 줄**
+- 화면은 VM 속성을 **이름(문자열)**으로 찾는다. 틀리면 예외 없이 비어 있다.
+- VM이 **알려야** 화면이 다시 읽는다 (`PropertyChanged`).
+- 계산 속성은 getter에서 계산하고, 알림은 원본 속성이 보낸다.
+
+## 2.1 데이터 바인딩 기초
 
 ### 구성
 
@@ -146,9 +202,7 @@ Text="{Binding Email, Mode=OneWay}"
 - `PropertyChanged`는 글자마다 전달. 검증/계산/조회가 붙은 칸은 무거워지고 미완성 값으로 오류가 날 수 있으니 필요한 칸에만.
 - `ComboBox.SelectedItem`, `DatePicker.SelectedDate`는 선택 즉시 전달된다.
 
----
-
-## 3. INotifyPropertyChanged
+## 2.2 INotifyPropertyChanged
 
 ViewModel이 "이 속성 바뀌었음"을 알려야 화면이 다시 읽는다. 알리지 않으면 **ViewModel과 화면이 서로 다른 값**을 갖게 되고, 저장하면 화면에 안 보이는 값이 저장된다.
 
@@ -217,9 +271,7 @@ public string Name
 - 계산 속성이 늘면 원본 setter마다 알림이 늘고 빠뜨리기 쉽다. CommunityToolkit.Mvvm은 `[NotifyPropertyChangedFor]`로 해결한다.
 - 읽기 전용 속성을 `TextBox.Text`에 바인딩하면 기본 TwoWay라 예외가 난다. `Mode=OneWay`를 명시한다.
 
----
-
-## 4. 컨트롤별 바인딩
+## 2.3 컨트롤별 바인딩
 
 ### ComboBox
 
@@ -250,9 +302,7 @@ private DateTime? _hireDate = new DateTime(2026, 3, 2);
 - 날짜는 `DateTime.Parse("...")` 대신 `new DateTime(y, m, d)`. 문자열 해석은 PC 지역 설정에 영향을 받는다.
 - 출력은 `$"{HireDate:yyyy-MM-dd}"`. null이면 빈 문자열.
 
----
-
-## 5. 바인딩이 안 될 때 점검 순서
+## 2.4 바인딩이 안 될 때 점검 순서
 
 | 증상 | 원인 | 드러나는 방식 |
 |---|---|---|
@@ -275,8 +325,373 @@ target element is 'TextBox' ... target property is 'Text'
 - `'Nmae'`: 찾지 못한 속성 / `'EmployeeViewModel'`: 현재 DataContext / `TextBox`, `Text`: 바인딩을 건 컨트롤과 속성
 - VS 2022: 디버그 → 창 → **XAML 바인딩 오류**
 
+## 2.5 보충: 구조와 자주 묻는 것
+
+![MVVM 구조](docs/binding-mvvm-structure.png)
+
+| 층 | 아는 것 | 모르는 것 |
+|---|---|---|
+| View (XAML) | VM의 **속성 이름** | VM의 타입, 로직 |
+| ViewModel | Model, Repository | 컨트롤 (`TextBox` 등) |
+| Model | 자기 데이터 | 화면, VM |
+| 코드비하인드 | VM을 만들어 `DataContext`에 연결 | 로직은 넣지 않음 |
+
+**Delphi와 비교**
+
+| Delphi (DB-aware 방식) | WPF MVVM |
+|---|---|
+| `TDataModule`의 `TUniQuery` | Repository |
+| `TField` 값들 (한 레코드) | Model 클래스 |
+| `TDataSource` | ViewModel + `DataContext` |
+| `TcxDBTextEdit.DataBinding.DataField` | `{Binding Name}` |
+| `FieldByName(...).AsString := ...` → 컨트롤 자동 갱신 | `vm.Name = ...` → 화면 자동 갱신 |
+
+> `Edit.Text := 값`이 떠오르면 → `vm.속성 = 값`으로 바꿔 쓴다. 층은 처음부터 다 만들지 않고 필요할 때 늘린다 (VM만 → Repository → Model).
+
+**바인딩 대상은 꼭 클래스여야 하나?**
+- 아니다. **public 속성**만 있으면 된다 (필드 불가). 변경 반영이 필요하면 `INotifyPropertyChanged`, 목록 추가/삭제 반영은 `INotifyCollectionChanged`(`ObservableCollection`).
+- 다른 대상: string 목록(`ItemsSource`), 다른 컨트롤(`ElementName`), 조상 요소(`RelativeSource`), `Dictionary`(`[key]`), `DataTable.DefaultView`, 익명 타입·record(읽기 전용).
+- `struct`는 피한다 (복사본이라 화면에서 고친 값이 원본에 안 감).
+
+**화면 하나에 마스터가 여러 개면?** (사원 + 부서)
+- 두 Model을 합친 클래스를 만들지 않고, **VM이 둘을 속성으로 가진다.**
+
+```xml
+<TextBox  Text="{Binding Employee.Name}"/>             <!-- 점(.)으로 안쪽까지 -->
+<ComboBox ItemsSource="{Binding Departments}"
+          DisplayMemberPath="Name"                     
+          SelectedValuePath="Code"
+          SelectedValue="{Binding Employee.DeptCode}"/>
+```
+
+| Delphi `TcxLookupComboBox` | WPF `ComboBox` |
+|---|---|
+| `ListSource` | `ItemsSource` |
+| `ListField` (보여 줄 값) | `DisplayMemberPath` |
+| `KeyField` (저장할 값) | `SelectedValuePath` |
+| `DataBinding.DataField` | `SelectedValue="{Binding ...}"` |
+
+- 목록 그리드에 사원+부서명을 한 행으로 보일 때는 JOIN 결과용 **조회 전용 클래스**를 만든다 (편집용 아님).
+- Model에 직접 바인딩해 편집하려면 Model도 알림이 필요하다 → Model이 `ObservableObject` 상속 / 또는 VM이 값을 복사해 편집하고 저장 시 반영.
+
+**영역별 DataContext 바꾸기**
+
+```xml
+<Grid DataContext="{Binding EmployeeDetail}">        <!-- 이 줄 자체는 바깥 VM 기준 -->
+    <TextBox Text="{Binding Name}"/>                 <!-- EmployeeDetail.Name -->
+    <TextBlock Text="{Binding DataContext.Title,
+               RelativeSource={RelativeSource AncestorType=Window}}"/>   <!-- 바깥 VM 접근 -->
+</Grid>
+```
+
+- 안쪽은 바뀐 DataContext 기준. 바깥 VM 속성은 그냥은 못 찾는다 (path error).
+- `EmployeeDetail`이 null이면 영역 전체가 조용히 빈칸.
+
 ---
 
-## 다음
+# 3차시. Command (ICommand → CommunityToolkit.Mvvm)
 
-- `ICommand` 직접 구현 → CommunityToolkit.Mvvm으로 교체 (코드비하인드 Click 핸들러를 ViewModel로)
+**목표**: 코드비하인드에서 Click 핸들러를 없애고, 버튼이 ViewModel 메서드를 **바인딩으로** 실행하게 한다. 최종적으로 코드비하인드에는 `DataContext = ...` 한 줄만 남는다.
+
+**실습 단계**
+
+| 단계 | 한 일 | 관찰한 것 |
+|---|---|---|
+| 1 | `RelayCommand` 직접 구현, 불러오기를 `LoadCommand`로 | 클릭 → `Execute` → 담아 둔 `Load()` |
+| 2 | 저장을 `SaveCommand` + `CanExecute`로, MessageBox 대신 `StatusMessage` | 벨 없이는 이름을 지워도 버튼이 켜져 있음 |
+| 3 | `CommandParameter`로 메뉴 4개 공유, `Ctrl+S` 단축키 | 단축키는 포커스를 안 옮겨 `LostFocus` 값이 빠짐 |
+| 4 | CommunityToolkit.Mvvm으로 교체 | 이름만 다름 (`NotifyCanExecuteChanged`, `RelayCommand<T>`) |
+| 5 | `[ObservableProperty]`, `[RelayCommand]` 등 소스 생성기 | VM 약 70줄 감소. 연관 알림 누락은 다른 알림에 가려짐 |
+| 6 | `async Task` → `AsyncRelayCommand`, 진행 막대, 취소 | 실행 중 비활성화·취소 버튼은 자동. 토큰 전달과 다른 Command의 벨은 직접 |
+
+**핵심 세 줄**
+- `Execute`와 `CanExecute`는 **버튼이 부른다.** 우리는 할 일과 조건을 넣어 두기만 한다.
+- 조건이 바뀌면 VM이 **벨**(`NotifyCanExecuteChanged`)을 울려야 버튼이 다시 묻는다.
+- 소스 생성기는 이 반복 코드를 대신 써 줄 뿐, 구조는 직접 만든 것과 같다.
+
+## 3.1 한눈에 보기
+
+![구성 요약](docs/command-01-overview.png)
+
+- 버튼은 **Command 객체만** 알고, 그 안에 어떤 메서드가 들었는지는 모른다.
+- VM의 메서드(`Save`, `LoadAsync`)는 private이어도 된다. 밖에 공개되는 것은 Command 속성뿐이다.
+- 버튼, `Ctrl+S`, 메뉴가 **같은 Command 객체**를 공유하면 실행 조건도 하나로 공유된다.
+
+## 3.2 왜 필요한가
+
+- 바인딩은 **속성만** 연결할 수 있고 **메서드는 연결할 수 없다.** (`Click="{Binding Load}"` 불가)
+- `ICommand`는 **메서드를 속성으로 포장**해서 바인딩으로 연결할 수 있게 한다.
+- 필수는 아니다. 작은 화면은 Click 핸들러에서 `vm.Load()`를 불러도 된다. 다만 아래 경우에 차이가 크다.
+
+| 경우 | Click 핸들러 | Command |
+|---|---|---|
+| 같은 동작을 버튼, 메뉴, 단축키에 연결 | 핸들러 여러 개 + 각각 Enabled 관리 | Command 하나, 활성 상태 자동 일치 |
+| 목록 각 행 안의 버튼 | 어느 행인지 찾아야 함 | `CommandParameter="{Binding}"`로 행 데이터를 받음 |
+| 기능 테스트 | 창을 띄워 클릭 | `vm.SaveCommand.Execute(null)` |
+| 버튼 상태 관리 | `UpdateUiState()` 같은 코드를 상태 바뀌는 곳마다 호출 | 조건은 `CanExecute` 한 곳, 바뀌면 벨 |
+
+## 3.3 ICommand 구조
+
+.NET이 정해 둔 약속. 멤버는 **3개뿐**이다.
+
+```csharp
+public interface ICommand
+{
+    bool CanExecute(object? parameter);      // 지금 실행해도 되나?
+    void Execute(object? parameter);         // 실행해
+    event EventHandler? CanExecuteChanged;   // 실행 가능 여부가 바뀌었을 때 울리는 벨
+}
+```
+
+| 멤버 | 한 줄 뜻 | 누가 부르나 |
+|---|---|---|
+| `Execute` | 담아 둔 **할 일 메서드**를 실행 | 버튼 (클릭할 때, 활성 상태일 때만) |
+| `CanExecute` | 담아 둔 **조건 메서드**를 실행해 `true/false`를 돌려줌 | 버튼 (연결될 때, 벨이 울릴 때, 클릭 직전) |
+| `CanExecuteChanged` | **구독자 목록** (이벤트). 버튼들이 "다시묻기" 메서드를 등록해 둔 곳 | 버튼이 구독(`+=`), Command가 울림 |
+| `RaiseCanExecuteChanged()` / `NotifyCanExecuteChanged()` | 목록 전원에게 **"다시 물어봐"** 신호. **ICommand 약속에는 없고** RelayCommand가 추가로 제공 | VM (조건이 바뀌었을 때) |
+
+**핵심**: `Execute`와 `CanExecute`는 **우리가 부르지 않는다. 버튼이 부른다.** 우리는 할 일과 조건을 넣어 두고, 조건이 바뀌면 벨만 울린다.
+
+**Delphi `TAction`과 대응**
+
+| Delphi `TAction` | WPF `ICommand` |
+|---|---|
+| `OnExecute` | `Execute` |
+| `OnUpdate`에서 `Enabled := ...` | `CanExecute` |
+| idle 때마다 `OnUpdate` 자동 호출 (**물어보러 감**, polling) | `CanExecuteChanged`가 울릴 때만 다시 물음 (**알려 줄 때만**, push) |
+| `Button1.Action := actSave` | `Command="{Binding SaveCommand}"` |
+| `ShortCut := Ctrl+S` | `KeyBinding Key="S" Modifiers="Ctrl"` |
+
+**버튼 내부에서 일어나는 일** (WPF가 구현해 둔 것, 의사 코드)
+
+```csharp
+void OnCommandAttached()                      // Command="{Binding ...}" 연결될 때
+{
+    Command.CanExecuteChanged += OnCanExecuteChanged;   // 벨 구독
+    IsEnabled = Command.CanExecute(null);               // 처음 한 번 물어봄
+}
+void OnCanExecuteChanged(object? s, EventArgs e)        // 벨이 울리면
+    => IsEnabled = Command.CanExecute(null);            // 다시 물어봄
+void OnClick()
+{
+    if (Command.CanExecute(null)) Command.Execute(null);
+}
+```
+
+## 3.4 RelayCommand: 메서드를 담아 두는 상자
+
+명령마다 `ICommand` 클래스를 만들지 않도록, 메서드를 받아서 **대신 호출해 주는(relay)** 범용 클래스.
+
+```csharp
+public class RelayCommand : ICommand
+{
+    private readonly Action _execute;           // 할 일 (Delphi: procedure of object)
+    private readonly Func<bool>? _canExecute;   // 조건 (Delphi: function: Boolean of object), 생략 가능
+
+    public RelayCommand(Action execute, Func<bool>? canExecute = null)
+    {
+        _execute = execute;
+        _canExecute = canExecute;
+    }
+
+    public event EventHandler? CanExecuteChanged;
+    public bool CanExecute(object? p) => _canExecute?.Invoke() ?? true;   // 조건 없으면 항상 true
+    public void Execute(object? p)    => _execute();
+    public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+}
+```
+
+| 문법 | 뜻 |
+|---|---|
+| `Action` | 값을 받지 않고 돌려주지 않는 메서드를 담는 타입. `Action a = Load;` (괄호 없음 = 메서드 자체) → `a();` |
+| `Action<object?>` | 값 하나를 받는 메서드를 담는 타입 (CommandParameter용) |
+| `Func<bool>` | `bool`을 돌려주는 메서드를 담는 타입 |
+| `?.Invoke()` | null이면 호출하지 않음 (Delphi `if Assigned(...) then`) |
+| `?? true` | 왼쪽이 null이면 `true` |
+| `EventArgs.Empty` | 보낼 추가 정보 없음. 이벤트 형식이 (보낸 쪽, 추가 정보) 두 칸이라 빈 값을 넣음 |
+
+**`RaiseCanExecuteChanged`가 따로 있는 이유**: `event`는 바깥에서 `+=`, `-=`만 할 수 있고 **호출은 선언한 클래스 안에서만** 된다. VM에서 `SaveCommand.CanExecuteChanged(...)`는 컴파일 오류라서, RelayCommand가 "밖에서 울리는 손잡이"를 열어 둔다. (`ObservableObject.OnPropertyChanged`와 같은 이유)
+
+## 3.5 호출 흐름 ① 연결과 클릭
+
+![연결과 클릭](docs/command-02-connect-click.png)
+
+```
+화면이 뜰 때:  버튼 → CanExecuteChanged 구독 → CanExecute() → CanSaveNow() → true → 켜짐
+클릭할 때:    버튼 → CanExecute() 재확인 → Execute() → Save() → StatusMessage 변경 → (PropertyChanged) → 상태바 갱신
+```
+
+## 3.6 호출 흐름 ② 조건이 바뀔 때 (벨)
+
+![조건 변경과 벨](docs/command-03-canexecute-bell.png)
+
+**벨이 없으면**: 버튼은 화면이 뜰 때 물어본 답을 계속 쓴다. 이름을 지워도 저장 버튼이 켜진 채로 남고, 클릭하면 `CanExecute` 재확인에서 막혀 **켜져 보이는데 아무 일도 안 일어나는** 상태가 된다.
+
+**INotifyPropertyChanged와 같은 구조**
+
+| | `INotifyPropertyChanged` | `ICommand` |
+|---|---|---|
+| 화면이 읽는 것 | 속성 값 | `CanExecute()` 결과 |
+| 화면이 구독하는 벨 | `PropertyChanged` | `CanExecuteChanged` |
+| 벨 손잡이 | `OnPropertyChanged()` | `NotifyCanExecuteChanged()` |
+| 화면 → VM | TwoWay로 setter 호출 | 클릭 시 `Execute()` |
+
+**CanExecute와 IsEnabled**
+
+- 버튼의 최종 활성 = **XAML의 `IsEnabled` AND `CanExecute` 결과.** 둘 중 하나라도 false면 꺼진다. Command를 쓰면 `IsEnabled`는 따로 쓰지 않고 조건을 `CanExecute` 한 곳에 둔다.
+- `Visibility`는 바꾸지 않는다 (숨기려면 별도 바인딩).
+- `KeyBinding`은 보이는 게 없으니 `false`면 **단축키를 눌러도 실행 안 됨**으로 나타난다.
+
+**Command를 받는 컨트롤** (`ICommandSource`)
+
+| 받음 | 안 받음 |
+|---|---|
+| `Button`, `ToggleButton`, `CheckBox`, `RadioButton`, `RepeatButton`, `MenuItem`, `Hyperlink`, `KeyBinding`, `MouseBinding` | `TextBox`, `ComboBox`, `DatePicker`, `DataGrid`, `ListBox` 등 입력/선택 컨트롤 |
+
+입력 컨트롤을 끄려면 `IsEnabled="{Binding bool속성}"` (바인딩 방식). **조건은 VM 한 곳, 연결 방식만 다르게.**
+
+## 3.7 VM에서 화면 기능 빼기
+
+- VM에 `MessageBox.Show`가 있으면 테스트 도중 창이 떠서 멈춘다. `using System.Windows;`가 VM에 있으면 화면 의존 신호.
+- 알릴 내용은 **VM 속성**(`StatusMessage`)에 넣고 화면이 바인딩으로 보여 준다.
+- 같은 문자열을 두 번 넣으면 `SetProperty`가 알림을 보내지 않는다 → 시각 등 매번 달라지는 값을 넣는다.
+- 확인 창이 꼭 필요하면 VM은 `IDialogService` 같은 **인터페이스만** 받아서 쓴다 (DI 항목).
+- `ICommand`는 `System.Windows.Input` 네임스페이스지만 WPF가 아니라 .NET 기본 라이브러리 타입이라 화면 의존이 아니다.
+
+## 3.8 CommandParameter와 KeyBinding
+
+```xml
+<Button Command="{Binding NavigateCommand}" CommandParameter="직원 목록"/>
+
+<Window.InputBindings>
+    <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveCommand}"/>
+</Window.InputBindings>
+```
+
+- `CommandParameter` 값이 `Execute(parameter)`의 `parameter`로 들어온다. Delphi의 공용 `OnClick` + `(Sender as TButton).Tag`를 `Sender` 없이 하는 것.
+- XAML에 글자로 쓰면 `string`, 안 쓰면 `null`. 목록 행에서는 `{Binding}`으로 행 객체가 통째로 들어온다.
+- 받는 쪽 검사: `if (menu is not string menuName) return;` → string이면 새 지역 변수 `menuName`에 담고, 아니면(null 포함) 종료. `RelayCommand<string>`이면 `if (menu is null) return;`만.
+- **단축키는 포커스를 옮기지 않는다.** `LostFocus` 바인딩 칸에 커서를 둔 채 `Ctrl+S` → 이전 값이 저장된다 (바인딩 차시 `Focusable=False` 실험과 같음). 텍스트 입력칸은 `UpdateSourceTrigger=PropertyChanged`로 맞춘다.
+
+## 3.9 CommunityToolkit.Mvvm 교체
+
+| 직접 만든 것 | 라이브러리 | 비고 |
+|---|---|---|
+| `ObservableObject` | `ObservableObject` (`CommunityToolkit.Mvvm.ComponentModel`) | `SetProperty`, `OnPropertyChanged` 이름 같음 |
+| `RelayCommand` | `RelayCommand` (`CommunityToolkit.Mvvm.Input`) | `RaiseCanExecuteChanged()` → **`NotifyCanExecuteChanged()`** |
+| `RelayParamCommand` (`object?`) | `RelayCommand<T>` | 매개변수 타입 지정, 형변환 불필요 |
+| (없음) | `AsyncRelayCommand` | `async Task` 메서드용 |
+
+- `NotifyCanExecuteChanged()`는 `ICommand`에 없으므로 속성 타입은 `RelayCommand` 또는 `IRelayCommand`로.
+- 이름을 라이브러리와 맞춰 두면 `using`만 바꿔 대부분 그대로 동작한다.
+
+## 3.10 소스 생성기 (반복 코드 제거)
+
+```csharp
+public partial class EmployeeViewModel : ObservableObject      // partial 필수
+{
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Summary))]                 // Name 바뀌면 Summary도 알림
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]           // Name 바뀌면 SaveCommand 벨
+    private string _name = "김민수";                             // → Name 속성 생성
+
+    public string Summary => $"편집 중: {Name} ({EmployeeNo}) 부서: {Department}";
+
+    [RelayCommand(CanExecute = nameof(CanSaveNow))]             // → SaveCommand 생성
+    private void Save() { ... }
+    private bool CanSaveNow() => !string.IsNullOrWhiteSpace(Name) && !IsLoading;
+
+    [RelayCommand]                                              // → NavigateCommand (RelayCommand<string>)
+    private void Navigate(string? menu) { ... }
+}
+```
+
+| 붙이는 것 | 생성되는 것 / 하는 일 |
+|---|---|
+| `[ObservableProperty] _name` | `Name` 속성 (`_` 떼고 첫 글자 대문자). setter는 `SetProperty` |
+| `[NotifyPropertyChangedFor(nameof(X))]` | 이 속성이 바뀌면 `X`도 PropertyChanged |
+| `[NotifyCanExecuteChangedFor(nameof(XCommand))]` | 이 속성이 바뀌면 `XCommand.NotifyCanExecuteChanged()` |
+| `[RelayCommand] void Save()` | `SaveCommand` (`RelayCommand`) |
+| `[RelayCommand] void Navigate(string? m)` | `NavigateCommand` (`RelayCommand<string>`, 매개변수 타입을 보고 결정) |
+| `[RelayCommand] async Task LoadAsync()` | `LoadCommand` (`AsyncRelayCommand`, **`Async` 접미사를 뗌**) |
+| `CanExecute = nameof(메서드)` | 조건 메서드 연결 |
+
+**주의**
+
+- 생성된 코드는 F12로 볼 수 있다 (`EmployeeViewModel.g.cs`, 분석기 → `CommunityToolkit.Mvvm.SourceGenerators`). 빌드마다 다시 만들어지므로 **직접 고칠 수 없다.** `partial`은 우리 파일과 생성 파일을 한 클래스로 합치기 위한 것.
+- 초기값은 필드 선언에서 넣는다. 코드에서는 **필드(`_name`)가 아니라 속성(`Name`)**을 쓴다. 필드에 바로 대입하면 setter를 거치지 않아 알림/벨이 없다.
+- **연관 알림 누락은 다른 알림에 가려진다.** `_employeeNo`에 `[NotifyPropertyChangedFor(nameof(Summary))]`가 빠졌어도, 불러오기는 이름도 같이 바꾸니 Summary가 갱신되어 보였다. 사번만 따로 바꿔 봐야 드러난다.
+- 읽기 전용 목록에 `[ObservableProperty]`를 붙이면 setter가 생겨 열린다. 그대로 `public IReadOnlyList<string> Departments { get; } = ...`로 둔다.
+
+## 3.11 호출 흐름 ③ 비동기 Command와 취소
+
+![비동기 실행과 취소](docs/command-04-async-cancel.png)
+
+```csharp
+[ObservableProperty]
+[NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+private bool _isLoading;
+
+[RelayCommand(IncludeCancelCommand = true)]                     // → LoadCommand + LoadCancelCommand
+private async Task LoadAsync(CancellationToken ct)
+{
+    IsLoading = true;                                           // 속성으로! (필드면 벨 없음)
+    try
+    {
+        StatusMessage = "불러오는 중 ...";
+        await Task.Delay(2000, ct);                             // ct를 넘겨야 취소가 먹힌다
+        Name = "홍길동"; ...
+        StatusMessage = $"불러옴: {Name}";
+    }
+    catch (OperationCanceledException)
+    {
+        StatusMessage = "취소됨";                                // 대입 코드는 건너뜀
+    }
+    finally
+    {
+        IsLoading = false;                                      // 성공, 취소, 예외 모두
+    }
+}
+```
+
+```xml
+<ProgressBar IsIndeterminate="{Binding LoadCommand.IsRunning}" Width="100" Height="12"/>
+<Button Content="취소" Command="{Binding LoadCancelCommand}"/>
+```
+
+**라이브러리가 대신 해 주는 것** (비동기 차시에서 직접 했던 것)
+
+| 비동기 차시 (직접) | AsyncRelayCommand |
+|---|---|
+| 조회 중 버튼 비활성화 (`UpdateUiState`) | 실행 중 `CanExecute = false` + 시작/끝에 벨 (기본: 중복 실행 금지) |
+| `btnCancel.Enabled = searching;` | `LoadCancelCommand.CanExecute` = 실행 중이고 취소 전 |
+| `_cts` 생성, `Dispose`, 최신 요청 비교 | 실행마다 토큰 자동 생성, 취소 Command가 `Cancel()` |
+| 진행 막대 표시/숨김 | `IsRunning` 바인딩 |
+
+**라이브러리가 안 해 주는 것**
+
+- **토큰 전달.** `Task.Delay(2000)`처럼 `ct`를 안 넘기면 취소 버튼을 눌러도 끝까지 실행된다. 취소는 강제 종료가 아니라 협조 요청.
+- **다른 Command의 벨.** `LoadCommand.IsRunning`을 `CanSaveNow()` 조건으로 쓰면, IsRunning이 바뀌어도 `SaveCommand` 벨은 아무도 안 울린다. 그래서 `IsLoading`을 VM에 두고 `[NotifyCanExecuteChangedFor(nameof(SaveCommand))]`로 연결한다.
+- `AllowConcurrentExecutions = true`로 중복 실행을 허용할 수 있다.
+
+## 3.12 겪은 오류와 원인
+
+| 증상 / 오류 | 원인 | 해결 |
+|---|---|---|
+| `new RelayCommand(Load)` 컴파일 오류 | 조건 매개변수가 필수 | `Func<bool>? canExecute = null` |
+| `_execute()`에서 null 경고 CS8602 | 필수인 할 일 필드를 `Action?`로 선언 | `readonly Action` (`?`는 생략 가능한 조건에만) |
+| 이름을 지워도 저장 버튼이 켜져 있음 | 벨을 울리지 않음 | setter에서 `NotifyCanExecuteChanged()` / `[NotifyCanExecuteChangedFor]` |
+| 속성 타입을 `RelayCommand`로 바꾸자 CS0053 | `RelayCommand` 클래스가 internal인데 public 속성 타입으로 씀 | `public class RelayCommand` |
+| 버튼이 아무 반응 없음 | `SaveComamand` 오타 → XAML이 `SaveCommand`를 못 찾음 (조용한 path error) | 이름 일치 |
+| 교체 후 CS1061 `RaiseCanExecuteChanged` 없음 | 라이브러리는 이름이 다름 | `NotifyCanExecuteChanged()` |
+| 상태 메시지가 계속 "준비" | `get => _statusMessage; set;` → setter는 숨은 필드에 저장, getter는 다른 필드를 읽음 + 알림 없음 | `set => SetProperty(ref _statusMessage, value);` |
+| 진행 막대를 추가하자 Summary가 왼쪽으로 이동 | StatusBar는 DockPanel, **마지막 아이템만** 남은 공간 차지 | 오른쪽에 둘 아이템을 마지막에 |
+| 진행 막대가 안 움직임 | `isRunning` 소문자 (출력 창에 `AsyncRelayCommand` 타입도 보임) | `IsRunning` |
+| 취소가 안 됨 | `Task.Delay(2000)`에 `ct` 미전달 | `Task.Delay(2000, ct)` |
+| 불러오는 중에도 저장이 눌림 | `IsLoading`을 선언만 하고 바꾸지 않음 | 시작에 `true`, `finally`에 `false` |
+
+---
+
+# 다음 차시
+
+- `ObservableCollection` + DataGrid/ListView 목록 화면 ("직원 목록" 메뉴), 행 버튼에 `CommandParameter="{Binding}"`

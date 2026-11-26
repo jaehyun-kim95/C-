@@ -47,8 +47,12 @@
             <Setter Property="VerticalAlignment" Value="Center"></Setter>
             <Setter Property="HorizontalAlignment" Value="Left"></Setter>
         </Style>
-
     </Window.Resources>
+
+    <Window.InputBindings>
+        <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveCommand}"></KeyBinding>
+    </Window.InputBindings>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
@@ -77,10 +81,10 @@
             <Border BorderThickness="0,0,1,0" BorderBrush="LightGray" Background="#F3F5F8">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="10">
-                        <Button Content="직원 목록" Style="{StaticResource MenuButton}"/>
-                        <Button Content="직원 등록" Style="{StaticResource SelectedButton}"/>
-                        <Button Content="부서 관리" Style="{StaticResource MenuButton}"/>
-                        <Button Content="설정" Margin="0" Style="{StaticResource MenuButton}"/>
+                        <Button Content="직원 목록" Style="{StaticResource MenuButton}" Command="{Binding NavigateCommand}" CommandParameter="직원 목록" />
+                        <Button Content="직원 등록" Style="{StaticResource SelectedButton}" Command="{Binding NavigateCommand}" CommandParameter="직원 등록"/>
+                        <Button Content="부서 관리" Style="{StaticResource MenuButton}" Command="{Binding NavigateCommand}" CommandParameter="부서 관리"/>
+                        <Button Content="설정" Margin="0" Style="{StaticResource MenuButton}" Command="{Binding NavigateCommand}" CommandParameter="설정"/>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
@@ -105,23 +109,23 @@
                         <RowDefinition Height="*"></RowDefinition>
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Column="0" Grid.Row="0" Text="사번" Style="{StaticResource FormLabel}"/>
-                    <TextBox Grid.Column="1" Grid.Row="0" Width="220" Text="{Binding EmployeeNo}" Style="{StaticResource FormTextBox}"></TextBox>
+                    <TextBox Grid.Column="1" Grid.Row="0" Width="220" Text="{Binding EmployeeNo, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}"></TextBox>
 
                     <TextBlock Grid.Column="0" Grid.Row="1" Text="이름" Style="{StaticResource FormLabel}"></TextBlock>
                     <TextBox Grid.Column="1" Grid.Row="1" Width="220" Text="{Binding Name, UpdateSourceTrigger =PropertyChanged}" Style="{StaticResource FormTextBox}"></TextBox>
 
                     <TextBlock Grid.Column="0" Grid.Row="2" Text="부서" Style="{StaticResource FormLabel}"></TextBlock>
-                    <ComboBox Grid.Column="1" Grid.Row="2" Width="220" Style="{StaticResource FormCombo}" ItemsSource="{Binding Departments}" SelectedItem="{Binding Department}">
+                    <ComboBox Grid.Column="1" Grid.Row="2" Width="220" Style="{StaticResource FormCombo}" ItemsSource="{Binding Departments}" SelectedItem="{Binding Department, UpdateSourceTrigger=PropertyChanged}">
                     </ComboBox>
 
                     <TextBlock Grid.Column="0" Grid.Row="3" Text="입사일" Style="{StaticResource FormLabel}"></TextBlock>
-                    <DatePicker Grid.Column="1" Grid.Row="3" Style="{StaticResource FormDate}" Width="220" SelectedDate="{Binding HireDate}"></DatePicker>
+                    <DatePicker Grid.Column="1" Grid.Row="3" Style="{StaticResource FormDate}" Width="220" SelectedDate="{Binding HireDate, UpdateSourceTrigger=PropertyChanged}"></DatePicker>
 
                     <TextBlock Grid.Column="0" Grid.Row="4" Text="이메일" Style="{StaticResource FormLabel}"></TextBlock>
-                    <TextBox Grid.Column="1" Grid.Row="4" Width="Auto" Text="{Binding Email}" Style="{StaticResource FormTextBox}" HorizontalAlignment="Stretch"></TextBox>
+                    <TextBox Grid.Column="1" Grid.Row="4" Width="Auto" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBox}" HorizontalAlignment="Stretch"></TextBox>
 
                     <TextBlock Grid.Column="0" Grid.Row="5" Text="메모" Style="{StaticResource FormLabel}"></TextBlock>
-                    <TextBox Grid.Column="1" Grid.Row="5" Padding="3,5,0,0" FontSize="13" Text="{Binding Memo}" 
+                    <TextBox Grid.Column="1" Grid.Row="5" Padding="3,5,0,0" FontSize="13" Text="{Binding Memo, UpdateSourceTrigger=PropertyChanged}" 
                              AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto"></TextBox>
                 </Grid>
             </Grid>
@@ -129,13 +133,14 @@
 
         <Border Grid.Row="2" BorderThickness="0,1,0,1" BorderBrush="Gray">
             <StackPanel Orientation="Horizontal" Margin="8" HorizontalAlignment="Right">
-                <Button x:Name="BtnLoad" Width="90" Padding="1,5,1,5" Margin="0,0,8,0" FontSize="13" Content="불러오기" Click="BtnLoad_Click"/>
-                <Button x:Name="BtnSave" Width="90" Padding="1,5,1,5" Margin="0,0,8,0" FontSize="13" Content="저장" Click="BtnSave_Click" IsEnabled="{Binding CanSave}"/>
-                <Button Width="90" Padding="1,5,1,5" FontSize="13" Content="취소"/>
+                <Button x:Name="BtnLoad" Width="90" Padding="1,5,1,5" Margin="0,0,8,0" FontSize="13" Content="불러오기" Command="{Binding LoadCommand}"/>
+                <Button x:Name="BtnSave" Width="90" Padding="1,5,1,5" Margin="0,0,8,0" FontSize="13" Content="저장" Command="{Binding SaveCommand}"/>
+                <Button Width="90" Padding="1,5,1,5" FontSize="13" Content="취소" Command="{Binding LoadCancelCommand}"/>
             </StackPanel>
         </Border>
         <StatusBar Grid.Row="3">
-            <StatusBarItem Content="준비"/>
+            <StatusBarItem Content="{Binding StatusMessage}"/>
+            <ProgressBar IsIndeterminate="{Binding LoadCommand.IsRunning}" Width="100" Height="12"></ProgressBar>
             <StatusBarItem Content="{Binding Summary}" HorizontalAlignment="Right" FontSize="12" Opacity="0.6" Margin="0,0,5,0"/>
         </StatusBar>
     </Grid>

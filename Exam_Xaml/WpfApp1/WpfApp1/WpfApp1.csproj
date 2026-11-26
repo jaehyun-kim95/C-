@@ -8,4 +8,18 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Command\ObservableObject.cs" />
+    <Compile Remove="Command\RelayCommand.cs" />
+    <Compile Remove="Command\RelayParamCommand.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Command\" />
+  </ItemGroup>
+
 </Project>
