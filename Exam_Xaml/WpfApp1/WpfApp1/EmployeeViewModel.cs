@@ -131,7 +131,7 @@ namespace WpfApp1
             }
             catch (OperationCanceledException ex)
             {
-                StatusMessage = "최소됨";
+                StatusMessage = "취소됨";
             }
             finally {
                 IsLoading = false;
